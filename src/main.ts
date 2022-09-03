@@ -19,8 +19,17 @@ app.mount('#app');
 
 // console.log(process.env.VUE_APP_BASE_URL);
 // console.log(process.env.VUE_APP_BASE_NAME);
+interface DataType {
+  data: any;
+  returnCode: string;
+  success: boolean;
+}
 
-hyRequest.request({
-  url: '/home/multidata',
-  method: 'GET'
-});
+hyRequest
+  .request<DataType>({
+    url: '/home/multidata',
+    method: 'GET'
+  })
+  .then((res) => {
+    console.log(res);
+  });

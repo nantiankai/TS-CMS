@@ -1,9 +1,11 @@
 import axios from 'axios';
-import type { AxiosInstance, AxiosRequestConfig } from 'axios';
+import type { AxiosInstance } from 'axios';
 import type { HYRequestInterceptors, HYRequestConfig } from './type';
 
 import { ElLoading } from 'element-plus';
 import { ILoadingInstance } from 'element-plus/lib/el-loading/src/loading.type';
+
+const DEAFULT_LOADING = true;
 
 class HYRequest {
   instance: AxiosInstance;
@@ -62,15 +64,31 @@ class HYRequest {
       }
     );
   }
-  request(config: HYRequestConfig): void {
-    if (config.interceptors?.requestInterceptor) {
-      config = config.interceptors.requestInterceptor(config);
-    }
-    this.instance.request(config).then((res) => {
-      if (config.interceptors?.responseInterceptor) {
-        res = config.interceptors.responseInterceptor(res);
+  request<T>(config: HYRequestConfig): Promise<T> {
+    return new Promise((resolve, reject) => {
+      if (config.interceptors?.requestInterceptor) {
+        config = config.interceptors.requestInterceptor(config);
       }
-      console.log(res);
+
+      if (config.showLoading === false) {
+        this.showLoading = config.showLoading;
+      }
+
+      this.instance
+        .request<any, T>(config)
+        .then((res) => {
+          if (config.interceptors?.responseInterceptor) {
+            // res = config.interceptors.responseInterceptor(res);
+          }
+          console.log(res);
+          this.showLoading = DEAFULT_LOADING;
+          resolve(res);
+        })
+        .catch((err) => {
+          this.showLoading = DEAFULT_LOADING;
+          reject(err);
+          return err;
+        });
     });
   }
 }
